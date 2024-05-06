@@ -7,7 +7,7 @@ Compresses web_static files and send to the web server
 from fabric.api import put, run, env
 from os import path
 
-env.hosts = ['100.26.136.10', '54.236.52.202']
+env.hosts = ['100.27.4.106', '54.82.122.13']
 
 
 def do_deploy(archive_path):
