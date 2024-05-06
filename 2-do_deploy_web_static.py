@@ -9,55 +9,22 @@ from os import path
 
 env.hosts = ['100.27.4.106', '54.82.122.13']
 
-
 def do_deploy(archive_path):
-    """
-    Deploys the archive to the server
-
-    Args:
-        archive_path (str): the location of the web_static files
-    """
-
-    if not path.exists(archive_path):
+    """distributes an archive to the web servers"""
+    if exists(archive_path) is False:
         return False
-
-    current = '/data/web_static/current'
-    releases = '/data/web_static/releases'
-
-    # Upload the archive to the /tmp/ directory of the web server
-    if put(archive_path, '/tmp/').failed is True:
-        return False
-
-    # Create folder to uncompress archive to
-    if run(f'mkdir -p {releases}/{archive_path[9:-4]}/').failed is True:
-        return False
-
-    # Uncompress the archive to the folder created above
-    if run(
-        f'tar -xzf /tmp/{archive_path[9:]} -C {releases}/{archive_path[9:-4]}/'
-    ).failed is True:
-        return False
-
-    # Move all the files in uncompressed web_static folder to parent folder
-    new_release_folder = f'{releases}/{archive_path[9:-4]}'
-    web_static_files = f'{new_release_folder}/web_static/*'
-    if run(f'mv {web_static_files} {new_release_folder}').failed is True:
-        return False
-
-    # Delete the web_static folder (result of uncompressing)
-    if run(
-        f'rm -rf {releases}/{archive_path[9:-4]}/web_static'
-    ).failed is True:
-        return False
-
-    # Delete the archive from /tmp
-    if run(f'rm /tmp/{archive_path[9:]}').failed is True:
-        return False
-
-    # Delete the symbolic link /data/web_static/current
-    if run(f'rm {current}').failed is True:
-        return False
-
-    # Create new symbolic link, current->
-    if run(f'ln -s {releases}/{archive_path[9:-4]} {current}').failed is True:
+    try:
+        file_n = archive_path.split("/")[-1]
+        no_ext = file_n.split(".")[0]
+        path = "/data/web_static/releases/"
+        put(archive_path, '/tmp/')
+        run('mkdir -p {}{}/'.format(path, no_ext))
+        run('tar -xzf /tmp/{} -C {}{}/'.format(file_n, path, no_ext))
+        run('rm /tmp/{}'.format(file_n))
+        run('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
+        run('rm -rf {}{}/web_static'.format(path, no_ext))
+        run('rm -rf /data/web_static/current')
+        run('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
+        return True
+    except:
         return False
