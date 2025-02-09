@@ -14,8 +14,8 @@ class State(BaseModel, Base):
     if os.environ['HBNB_TYPE_STORAGE'] == 'db':
         __tablename__ = 'states'
         name = Column(String(128), nullable=False)
-        # cities = relationship(
-        #     "City", cascade="all, delete-orphan", back_populates="states")
+        cities = relationship(
+            "City", cascade="all, delete", back_populates="state")
     else:
         name = ""
 
@@ -27,8 +27,11 @@ class State(BaseModel, Base):
             all_cities = []
 
             for k, v in all_objects.items():
-                if all_objects[k].state_id == self.id:
-                    all_cities.append(all_objects[k])
+                try:
+                    if all_objects[k].state_id == self.id:
+                        all_cities.append(all_objects[k])
+                except AttributeError:
+                    pass
 
             return all_cities
 

@@ -21,7 +21,11 @@ HBNB_MYSQL_USER = os.environ['HBNB_MYSQL_USER']
 HBNB_MYSQL_PWD = os.environ['HBNB_MYSQL_PWD']
 HBNB_MYSQL_HOST = os.environ['HBNB_MYSQL_HOST']
 HBNB_MYSQL_DB = os.environ['HBNB_MYSQL_DB']
-HBNB_ENV = os.environ['HBNB_ENV']
+
+try:
+    HBNB_ENV = os.environ['HBNB_ENV']
+except KeyError:
+    HBNB_ENV = None
 
 
 class DBStorage:
@@ -135,3 +139,10 @@ class DBStorage:
         session_factory = sessionmaker(
             bind=self.__engine, expire_on_commit=False)
         self.__session = scoped_session(session_factory)
+
+    def close(self):
+        """
+        Closes the storage
+        """
+
+        self.__session.remove()
